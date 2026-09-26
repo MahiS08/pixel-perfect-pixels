@@ -1,4 +1,6 @@
-import { createServerFn } from "@tanstack/react-start";
+const fs = require('fs');
+
+const apiTs = `import { createServerFn } from "@tanstack/react-start";
 import { executeSql } from "./snowflake";
 import type {
   AnalysisResult,
@@ -47,7 +49,7 @@ function buildGraph(input: MessageInput, signals: EvidenceSignal[], score: numbe
       x: 265,
       y: 90,
       suspicious: (find("domain")?.contribution ?? 0) > 0,
-      evidence: `Domain reputation lookup for ${input.senderDomain || "unknown.tld"}.`,
+      evidence: \`Domain reputation lookup for \${input.senderDomain || "unknown.tld"}.\`,
       step: 1,
     },
     {
@@ -102,7 +104,7 @@ function buildGraph(input: MessageInput, signals: EvidenceSignal[], score: numbe
     },
     {
       id: "risk",
-      label: `Risk ${score}`,
+      label: \`Risk \${score}\`,
       kind: "risk",
       x: 855,
       y: 175,
@@ -135,37 +137,42 @@ export const analyzeMessage = createServerFn({ method: "POST" })
       const msgId = "MSG-" + Math.floor(Math.random() * 90000 + 10000);
       
       await executeSql(
-        `INSERT INTO RAW.MESSAGES (MESSAGE_ID, SENDER_EMAIL, SENDER_DOMAIN, RECIPIENT_EMAIL, SUBJECT, MESSAGE_TEXT, RECEIVED_AT, IS_KNOWN_SENDER, SOURCE_TYPE)
-         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), ?, 'USER_INPUT')`,
+        \`INSERT INTO RAW.MESSAGES (MESSAGE_ID, SENDER_EMAIL, SENDER_DOMAIN, RECIPIENT_EMAIL, SUBJECT, MESSAGE_TEXT, RECEIVED_AT, IS_KNOWN_SENDER, SOURCE_TYPE)
+         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP(), ?, 'USER_INPUT')\`,
         [msgId, input.senderEmail, input.senderDomain, input.recipient, input.subject, input.body, input.knownSender]
       );
 
       const features = await executeSql<any>(
-        `SELECT 
+        \`SELECT 
           (SELECT COUNT(*) FROM TABLE(FLATTEN(INPUT => SPLIT(?, ' '))) WHERE VALUE LIKE '%http%') as LINK_COUNT,
           CASE WHEN ? = false THEN 1 ELSE 0 END as UNKNOWN_SENDER_SIGNAL,
           (SELECT COUNT(*) FROM TABLE(FLATTEN(INPUT => SPLIT(LOWER(?), ' '))) WHERE VALUE IN ('urgent', 'immediately', 'now')) as URGENCY_SIGNAL
-        `,
+        \`,
         [input.body, input.knownSender, input.body]
       );
 
       const ai = await executeSql<any>(
-        `SELECT SNOWFLAKE.CORTEX.CLASSIFY_TEXT(?, ['URGENT', 'THREAT', 'CREDENTIAL_HARVESTING', 'SOCIAL_ENGINEERING', 'BENIGN']) as CLASSIFICATION`,
+        \`SELECT SNOWFLAKE.CORTEX.CLASSIFY_TEXT(?, ['URGENT', 'THREAT', 'CREDENTIAL_HARVESTING', 'SOCIAL_ENGINEERING', 'BENIGN']) as CLASSIFICATION\`,
+        [input.body]
+      );
+
+      const aiSentiment = await executeSql<any>(
+        \`SELECT SNOWFLAKE.CORTEX.SENTIMENT(?) as SENTIMENT\`,
         [input.body]
       );
 
       const risk = await executeSql<any>(
-        `SELECT 
+        \`SELECT 
           30 * 0.5 + 25 * ? + 20 * 0.5 + 15 * ? + 10 * 0.5 as RISK_SCORE
-        `,
+        \`,
         [features[0]?.UNKNOWN_SENDER_SIGNAL || 1, features[0]?.URGENCY_SIGNAL ? 1 : 0]
       );
 
       const score = Math.floor(risk[0]?.RISK_SCORE || 0);
 
       await executeSql(
-        `INSERT INTO ANALYTICS.RISK_RESULTS (MESSAGE_ID, RISK_SCORE, RISK_LEVEL, CONFIDENCE, CREATED_AT)
-         VALUES (?, ?, ?, 'High', CURRENT_TIMESTAMP())`,
+        \`INSERT INTO ANALYTICS.RISK_RESULTS (MESSAGE_ID, RISK_SCORE, RISK_LEVEL, CONFIDENCE, CREATED_AT)
+         VALUES (?, ?, ?, 'High', CURRENT_TIMESTAMP())\`,
         [msgId, score, bandFor(score)]
       );
 
@@ -211,7 +218,7 @@ export const analyzeMessage = createServerFn({ method: "POST" })
 
 export const getDashboard = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const counts = await executeSql<any>(`SELECT COUNT(*) as COUNT FROM RAW.MESSAGES`);
+    const counts = await executeSql<any>(\`SELECT COUNT(*) as COUNT FROM RAW.MESSAGES\`);
     const count = counts?.[0]?.COUNT || 0;
     return {
       metrics: [
@@ -432,3 +439,5 @@ export const baseSimulatorFactors: SimulatorFactor[] = [
     explanation: "Credential and finance terminology density.",
   },
 ];
+`;
+fs.writeFileSync('src/services/api.ts', apiTs);

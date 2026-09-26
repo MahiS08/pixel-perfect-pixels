@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
+import { Route as CampaignsRouteImport } from './routes/campaigns'
+import { Route as DataLabRouteImport } from './routes/data-lab'
+import { Route as OverviewRouteImport } from './routes/overview'
+import { Route as RiskSimulatorRouteImport } from './routes/risk-simulator'
+import { Route as ThreatFeedRouteImport } from './routes/threat-feed'
 import { Route as InvestigationsIndexRouteImport } from './routes/investigations.index'
 import { Route as InvestigationsCaseIdRouteImport } from './routes/investigations.$caseId'
 
@@ -22,6 +27,31 @@ const IndexRoute = IndexRouteImport.update({
 const AnalyzeRoute = AnalyzeRouteImport.update({
   id: '/analyze',
   path: '/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsRoute = CampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataLabRoute = DataLabRouteImport.update({
+  id: '/data-lab',
+  path: '/data-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OverviewRoute = OverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskSimulatorRoute = RiskSimulatorRouteImport.update({
+  id: '/risk-simulator',
+  path: '/risk-simulator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThreatFeedRoute = ThreatFeedRouteImport.update({
+  id: '/threat-feed',
+  path: '/threat-feed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvestigationsIndexRoute = InvestigationsIndexRouteImport.update({
@@ -38,12 +68,22 @@ const InvestigationsCaseIdRoute = InvestigationsCaseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
+  '/campaigns': typeof CampaignsRoute
+  '/data-lab': typeof DataLabRoute
+  '/overview': typeof OverviewRoute
+  '/risk-simulator': typeof RiskSimulatorRoute
+  '/threat-feed': typeof ThreatFeedRoute
   '/investigations/$caseId': typeof InvestigationsCaseIdRoute
   '/investigations/': typeof InvestigationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
+  '/campaigns': typeof CampaignsRoute
+  '/data-lab': typeof DataLabRoute
+  '/overview': typeof OverviewRoute
+  '/risk-simulator': typeof RiskSimulatorRoute
+  '/threat-feed': typeof ThreatFeedRoute
   '/investigations/$caseId': typeof InvestigationsCaseIdRoute
   '/investigations': typeof InvestigationsIndexRoute
 }
@@ -51,18 +91,46 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
+  '/campaigns': typeof CampaignsRoute
+  '/data-lab': typeof DataLabRoute
+  '/overview': typeof OverviewRoute
+  '/risk-simulator': typeof RiskSimulatorRoute
+  '/threat-feed': typeof ThreatFeedRoute
   '/investigations/$caseId': typeof InvestigationsCaseIdRoute
   '/investigations/': typeof InvestigationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyze' | '/investigations/$caseId' | '/investigations/'
+  fullPaths:
+    | '/'
+    | '/analyze'
+    | '/campaigns'
+    | '/data-lab'
+    | '/overview'
+    | '/risk-simulator'
+    | '/threat-feed'
+    | '/investigations/$caseId'
+    | '/investigations/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyze' | '/investigations/$caseId' | '/investigations'
+  to:
+    | '/'
+    | '/analyze'
+    | '/campaigns'
+    | '/data-lab'
+    | '/overview'
+    | '/risk-simulator'
+    | '/threat-feed'
+    | '/investigations/$caseId'
+    | '/investigations'
   id:
     | '__root__'
     | '/'
     | '/analyze'
+    | '/campaigns'
+    | '/data-lab'
+    | '/overview'
+    | '/risk-simulator'
+    | '/threat-feed'
     | '/investigations/$caseId'
     | '/investigations/'
   fileRoutesById: FileRoutesById
@@ -70,6 +138,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzeRoute: typeof AnalyzeRoute
+  CampaignsRoute: typeof CampaignsRoute
+  DataLabRoute: typeof DataLabRoute
+  OverviewRoute: typeof OverviewRoute
+  RiskSimulatorRoute: typeof RiskSimulatorRoute
+  ThreatFeedRoute: typeof ThreatFeedRoute
   InvestigationsCaseIdRoute: typeof InvestigationsCaseIdRoute
   InvestigationsIndexRoute: typeof InvestigationsIndexRoute
 }
@@ -88,6 +161,41 @@ declare module '@tanstack/react-router' {
       path: '/analyze'
       fullPath: '/analyze'
       preLoaderRoute: typeof AnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns': {
+      id: '/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-lab': {
+      id: '/data-lab'
+      path: '/data-lab'
+      fullPath: '/data-lab'
+      preLoaderRoute: typeof DataLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/overview': {
+      id: '/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof OverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk-simulator': {
+      id: '/risk-simulator'
+      path: '/risk-simulator'
+      fullPath: '/risk-simulator'
+      preLoaderRoute: typeof RiskSimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/threat-feed': {
+      id: '/threat-feed'
+      path: '/threat-feed'
+      fullPath: '/threat-feed'
+      preLoaderRoute: typeof ThreatFeedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/investigations/': {
@@ -110,6 +218,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzeRoute: AnalyzeRoute,
+  CampaignsRoute: CampaignsRoute,
+  DataLabRoute: DataLabRoute,
+  OverviewRoute: OverviewRoute,
+  RiskSimulatorRoute: RiskSimulatorRoute,
+  ThreatFeedRoute: ThreatFeedRoute,
   InvestigationsCaseIdRoute: InvestigationsCaseIdRoute,
   InvestigationsIndexRoute: InvestigationsIndexRoute,
 }

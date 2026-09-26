@@ -1,10 +1,20 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# AGENT WORKFLOW
+
+This project is now built and maintained locally.
+
+Do NOT use any Lovable workflows, error boundaries, or sandbox integrations.
+All features and components are maintained locally in the repository.
+
+## Tech Stack
+- Frontend: React + Vite + Tailwind CSS + Framer Motion
+- Routing: TanStack Router
+- Data fetching: TanStack Query + TanStack Start (createServerFn)
+- Backend API: Snowflake SDK
+
+## Snowflake Setup
+To connect this application to Snowflake:
+1. Set the `.env` variables from `.env.example`
+2. Run the `setup-snowflake.js` script to bootstrap the DB.
+3. Start the application with `npm run dev`.
+
+The frontend endpoints communicate to Snowflake via `createServerFn` server-side endpoints defined in `src/services/api.ts`.

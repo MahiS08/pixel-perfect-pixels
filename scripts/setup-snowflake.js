@@ -1,0 +1,117 @@
+import snowflake from 'snowflake-sdk';
+
+const connection = snowflake.createConnection({
+  account: process.env.SNOWFLAKE_ACCOUNT,
+  username: process.env.SNOWFLAKE_USERNAME,
+  password: process.env.SNOWFLAKE_PASSWORD,
+  role: process.env.SNOWFLAKE_ROLE || 'ACCOUNTADMIN',
+});
+
+connection.connect((err, conn) => {
+  if (err) {
+    console.error('Connection failed: ', err);
+    process.exit(1);
+  }
+  console.log('Connected to Snowflake.');
+  const stmts = [
+    "CREATE DATABASE IF NOT EXISTS PHISHGRAPH_DB;",
+    "USE DATABASE PHISHGRAPH_DB;",
+    "CREATE SCHEMA IF NOT EXISTS RAW;",
+    "CREATE SCHEMA IF NOT EXISTS INTELLIGENCE;",
+    "CREATE SCHEMA IF NOT EXISTS ANALYTICS;",
+    `CREATE TABLE IF NOT EXISTS RAW.MESSAGES (
+      MESSAGE_ID VARCHAR(255) PRIMARY KEY,
+      SENDER_EMAIL VARCHAR(255),
+      SENDER_DOMAIN VARCHAR(255),
+      RECIPIENT_EMAIL VARCHAR(255),
+      SUBJECT VARCHAR(1024),
+      MESSAGE_TEXT TEXT,
+      RECEIVED_AT TIMESTAMP,
+      IS_KNOWN_SENDER BOOLEAN,
+      SOURCE_TYPE VARCHAR(50)
+    );`,
+    `CREATE TABLE IF NOT EXISTS INTELLIGENCE.DOMAIN_INTEL (
+      DOMAIN VARCHAR(255) PRIMARY KEY,
+      REPUTATION_SCORE NUMBER,
+      DOMAIN_AGE_DAYS NUMBER,
+      KNOWN_RISK BOOLEAN,
+      SOURCE VARCHAR(255),
+      UPDATED_AT TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS INTELLIGENCE.THREAT_KNOWLEDGE (
+      KNOWLEDGE_ID VARCHAR(255) PRIMARY KEY,
+      TITLE VARCHAR(255),
+      CATEGORY VARCHAR(255),
+      PATTERN VARCHAR(1024),
+      DESCRIPTION TEXT,
+      SEVERITY VARCHAR(50),
+      RECOMMENDED_ACTION TEXT,
+      SOURCE VARCHAR(255)
+    );`,
+    `CREATE TABLE IF NOT EXISTS INTELLIGENCE.MESSAGE_FEATURES (
+      MESSAGE_ID VARCHAR(255) PRIMARY KEY,
+      LINK_COUNT NUMBER,
+      RISKY_LINK_COUNT NUMBER,
+      SUSPICIOUS_KEYWORD_COUNT NUMBER,
+      KEYWORD_SIGNAL NUMBER,
+      UNKNOWN_SENDER_SIGNAL NUMBER,
+      RISKY_LINK_SIGNAL NUMBER,
+      URGENCY_SIGNAL NUMBER,
+      DOMAIN_RISK_SIGNAL NUMBER
+    );`,
+    `CREATE TABLE IF NOT EXISTS INTELLIGENCE.MESSAGE_AI (
+      MESSAGE_ID VARCHAR(255) PRIMARY KEY,
+      CLASSIFICATION VARCHAR(255),
+      SENTIMENT VARCHAR(255),
+      EXPLANATION VARIANT,
+      ANALYZED_AT TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS ANALYTICS.RISK_RESULTS (
+      MESSAGE_ID VARCHAR(255) PRIMARY KEY,
+      KEYWORD_POINTS NUMBER,
+      UNKNOWN_SENDER_POINTS NUMBER,
+      LINK_POINTS NUMBER,
+      URGENCY_POINTS NUMBER,
+      DOMAIN_POINTS NUMBER,
+      RISK_SCORE NUMBER,
+      RISK_LEVEL VARCHAR(50),
+      CONFIDENCE VARCHAR(50),
+      CREATED_AT TIMESTAMP
+    );`,
+    `CREATE TABLE IF NOT EXISTS ANALYTICS.CAMPAIGN_MATCHES (
+      MESSAGE_ID VARCHAR(255),
+      MATCHED_MESSAGE_ID VARCHAR(255),
+      SIMILARITY_SCORE NUMBER(10,4),
+      CAMPAIGN_ID VARCHAR(255),
+      CREATED_AT TIMESTAMP
+    );`,
+    // Demo seed data
+    `INSERT INTO INTELLIGENCE.DOMAIN_INTEL (DOMAIN, REPUTATION_SCORE, DOMAIN_AGE_DAYS, KNOWN_RISK, SOURCE, UPDATED_AT)
+     SELECT 'paypa1-security.com', 90, 2, TRUE, 'DEMO_SEED', CURRENT_TIMESTAMP()
+     WHERE NOT EXISTS (SELECT 1 FROM INTELLIGENCE.DOMAIN_INTEL WHERE DOMAIN = 'paypa1-security.com');`,
+    
+    `INSERT INTO INTELLIGENCE.THREAT_KNOWLEDGE (KNOWLEDGE_ID, TITLE, CATEGORY, PATTERN, DESCRIPTION, SEVERITY, RECOMMENDED_ACTION, SOURCE)
+     SELECT 'TK-001', 'Account Suspension Pretext', 'SOCIAL_ENGINEERING', 'URGENT: Your account will be deleted', 'Attacker uses time pressure and threat of account loss to bypass scrutiny.', 'HIGH', 'Quarantine message and check for similar patterns.', 'DEMO_SEED'
+     WHERE NOT EXISTS (SELECT 1 FROM INTELLIGENCE.THREAT_KNOWLEDGE WHERE KNOWLEDGE_ID = 'TK-001');`
+  ];
+  
+  let i = 0;
+  const execNext = () => {
+    if (i >= stmts.length) {
+      console.log('Setup complete.');
+      process.exit(0);
+    }
+    conn.execute({
+      sqlText: stmts[i],
+      complete: (e) => {
+        if (e) {
+          console.error('Error executing: ' + stmts[i], e);
+          process.exit(1);
+        }
+        i++;
+        execNext();
+      }
+    });
+  };
+  execNext();
+});

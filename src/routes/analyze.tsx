@@ -75,17 +75,23 @@ function Analyze() {
   const run = async () => {
     setResult(null);
     setStage(0);
-    const analysis = await analyzeMessage(form);
-    for (let i = 1; i <= PIPELINE_STAGES.length; i++) {
-      await new Promise((r) => setTimeout(r, 480));
-      setStage(i);
-    }
-    setStage(null);
-    setResult(analysis);
-    setGraphStep(-1);
-    for (let s = 0; s <= 5; s++) {
-      await new Promise((r) => setTimeout(r, 380));
-      setGraphStep(s);
+    try {
+      const analysis = await analyzeMessage(form);
+      for (let i = 1; i <= PIPELINE_STAGES.length; i++) {
+        await new Promise((r) => setTimeout(r, 480));
+        setStage(i);
+      }
+      setStage(null);
+      setResult(analysis);
+      setGraphStep(-1);
+      for (let s = 0; s <= 5; s++) {
+        await new Promise((r) => setTimeout(r, 380));
+        setGraphStep(s);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setStage(null);
+      alert(err.message || "SNOWFLAKE CONNECTION ERROR");
     }
   };
 

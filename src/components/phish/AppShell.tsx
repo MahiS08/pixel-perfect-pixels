@@ -18,11 +18,11 @@ import { cn } from "@/lib/utils";
 import { StatusPill } from "./primitives";
 
 const nav = [
-  { to: "/", label: "Overview", icon: LayoutDashboard },
+  { to: "/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/analyze", label: "Analyze", icon: Search },
   { to: "/investigations", label: "Investigations", icon: ShieldAlert },
   { to: "/campaigns", label: "Campaigns", icon: Radar },
-  { to: "/simulator", label: "Risk Simulator", icon: SlidersHorizontal },
+  { to: "/risk-simulator", label: "Risk Simulator", icon: SlidersHorizontal },
   { to: "/threat-feed", label: "Threat Feed", icon: Activity },
   { to: "/data-lab", label: "Data Lab", icon: Database },
 ] as const;
@@ -49,7 +49,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="space-y-1">
       {nav.map((item) => {
-        const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+        const active = item.to === "/overview" ? pathname === "/overview" || pathname === "/" : pathname.startsWith(item.to);
         const Icon = item.icon;
         return (
           <Link
